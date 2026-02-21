@@ -2,9 +2,7 @@ class GameOfLife {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.cellSize = 8;
-        this.cols = Math.floor(this.canvas.width / this.cellSize);
-        this.rows = Math.floor(this.canvas.height / this.cellSize);
+        this.setupCanvas();
         this.grid = this.createGrid();
         this.isRunning = false;
         this.generation = 0;
@@ -15,6 +13,22 @@ class GameOfLife {
         this.setupEventListeners();
         this.updateStats();
         this.draw();
+    }
+    
+    setupCanvas() {
+        // Adjust cell size based on screen width for better mobile experience
+        const isMobile = window.innerWidth <= 768;
+        this.cellSize = isMobile ? 10 : 8;
+        
+        // Ensure canvas dimensions are properly set
+        if (isMobile) {
+            const containerWidth = Math.min(window.innerWidth - 20, 400);
+            this.canvas.width = containerWidth;
+            this.canvas.height = 350;
+        }
+        
+        this.cols = Math.floor(this.canvas.width / this.cellSize);
+        this.rows = Math.floor(this.canvas.height / this.cellSize);
     }
     
     createGrid() {
@@ -42,24 +56,45 @@ class GameOfLife {
             }
         });
         
-        // Canvas clicking
+        // Canvas clicking and touch events
         this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
+        this.canvas.addEventListener('touchstart', (e) => this.handleCanvasTouch(e));
+        this.canvas.addEventListener('touchmove', (e) => this.handleCanvasTouch(e));
         
-        // Prevent context menu on right click
+        // Prevent context menu and default touch behaviors
         this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        this.canvas.addEventListener('touchstart', (e) => e.preventDefault());
+        this.canvas.addEventListener('touchmove', (e) => e.preventDefault());
     }
     
     handleCanvasClick(e) {
+        const coords = this.getCanvasCoordinates(e.clientX, e.clientY);
+        this.toggleCell(coords.col, coords.row);
+    }
+    
+    handleCanvasTouch(e) {
+        if (e.touches && e.touches.length > 0) {
+            const touch = e.touches[0];
+            const coords = this.getCanvasCoordinates(touch.clientX, touch.clientY);
+            this.toggleCell(coords.col, coords.row);
+        }
+    }
+    
+    getCanvasCoordinates(clientX, clientY) {
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;
         const scaleY = this.canvas.height / rect.height;
         
-        const x = (e.clientX - rect.left) * scaleX;
-        const y = (e.clientY - rect.top) * scaleY;
+        const x = (clientX - rect.left) * scaleX;
+        const y = (clientY - rect.top) * scaleY;
         
         const col = Math.floor(x / this.cellSize);
         const row = Math.floor(y / this.cellSize);
         
+        return { col, row };
+    }
+    
+    toggleCell(col, row) {
         if (col >= 0 && col < this.cols && row >= 0 && row < this.rows) {
             this.grid[row][col] = !this.grid[row][col];
             this.draw();
@@ -293,10 +328,28 @@ class GameOfLife {
 
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new GameOfLife();
+    window.gameOfLife = new GameOfLife();
 });
 
-// Handle window resize
+// Handle window resize for responsive behavior
+let resizeTimeout;
 window.addEventListener('resize', () => {
-    // Could add responsive canvas resizing here if needed
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        // Reinitialize the game with new dimensions if significant size change
+        const game = window.gameOfLife;
+        if (game) {
+            const wasMobile = game.cellSize === 10;
+            const isMobileNow = window.innerWidth <= 768;
+            
+            if (wasMobile !== isMobileNow) {
+                game.pause();
+                game.setupCanvas();
+                game.grid = game.createGrid();
+                game.generation = 0;
+                game.draw();
+                game.updateStats();
+            }
+        }
+    }, 250);
 });
