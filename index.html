@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conway's Game of Life</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔬 Conway's Game of Life</h1>
+            <p>Click cells to toggle • Set pattern • Hit play • Watch evolution!</p>
+        </header>
+        
+        <div class="controls">
+            <div class="main-controls">
+                <button id="playBtn" class="btn primary">▶️ Play</button>
+                <button id="pauseBtn" class="btn" disabled>⏸️ Pause</button>
+                <button id="stepBtn" class="btn">⏭️ Step</button>
+                <button id="clearBtn" class="btn">🗑️ Clear</button>
+            </div>
+            
+            <div class="speed-control">
+                <label for="speedSlider">Speed:</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedValue">5</span>
+            </div>
+            
+            <div class="pattern-control">
+                <label for="patternSelect">Patterns:</label>
+                <select id="patternSelect">
+                    <option value="">-- Select Pattern --</option>
+                    <option value="glider">🛸 Glider</option>
+                    <option value="blinker">💫 Blinker</option>
+                    <option value="beacon">🏮 Beacon</option>
+                    <option value="toad">🐸 Toad</option>
+                    <option value="pulsar">💥 Pulsar</option>
+                    <option value="gosperGun">🔫 Gosper Gun</option>
+                    <option value="random">🎲 Random</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <span>Generation: <strong id="generation">0</strong></span>
+            <span>Population: <strong id="population">0</strong></span>
+        </div>
+        
+        <div class="game-container">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+        </div>
+        
+        <div class="info">
+            <h3>Rules:</h3>
+            <ul>
+                <li><strong>Birth:</strong> Dead cell with exactly 3 neighbors becomes alive</li>
+                <li><strong>Survival:</strong> Live cell with 2-3 neighbors stays alive</li>
+                <li><strong>Death:</strong> Live cell with <2 or >3 neighbors dies</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
